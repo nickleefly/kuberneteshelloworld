@@ -309,9 +309,9 @@ The firwall, network configuration created automatically
 
 Cleanup
 
-kubectl delete rc,service -l type=show-type
-kubectl delete rc,service -l type=backend-type
-gcloud container clusters delete cluster-1
+    kubectl delete rc,service -l type=show-type
+    kubectl delete rc,service -l type=backend-type
+    gcloud container clusters delete cluster-1
 
 ### Extending the sample
 
