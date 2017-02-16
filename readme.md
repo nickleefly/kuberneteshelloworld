@@ -97,4 +97,5 @@ request as well.
 ```shell
 kubectl delete rc,service -l type=show-type
 kubectl delete rc,service -l type=backend-type
+gcloud container clusters delete cluster-1
 ```
