@@ -10,14 +10,16 @@ https://github.com/nickleefly/kuberneteshelloworld
 
 ### Build your images, and push to docker hub
 
-git clone https://github.com/nickleefly/kuberneteshelloworld.git
-cd kuberneteshelloworld/container/backend
-docker build -t nickleefly/env-backend .
-cd kuberneteshelloworld/container/show
-docker build -t nickleefly/env-show .
-docker images
-docker push nickleefly/env-backend
-docker push nickleefly/env-show
+    git clone https://github.com/nickleefly/kuberneteshelloworld.git
+    cd kuberneteshelloworld/container/backend
+    docker build -t env-backend .
+    docker tag env-backend nickleefly/env-backend:latest
+    cd kuberneteshelloworld/container/show
+    docker build -t env-show .
+    docker tag env-show nickleefly/env-show:latest
+    docker images
+    docker push nickleefly/env-backend
+    docker push nickleefly/env-show
 
 Also taken from kubernetes [environment guide][3] Example
 
@@ -29,14 +31,14 @@ user → loadbalancer → frontend → lookup backend service → make backend A
 
 The frontend consists of a golang program that listens for http requests on port :8080. It is wrapped in the container
 
-[nickleefly/container/show][4]
+[nickleefly/container/env-show][4]
 
 The frontend service is configured to startup 2 replicas inside a Loaldbalanced Kubernetes service:
 
 Frontend
 
 Replication Controller
-    
+
 ```
 ---
 apiVersion: v1
@@ -98,13 +100,13 @@ spec:
 
 The backend consists of another golang program which for http requests on port :5000. It is wrapped in the container
 
-[nickleefly/container/backend][5]
+[nickleefly/container/env-backend][5]
 
 Backend uses the advertises the label _be-type_
 
 Replication Controller
-    
-    
+
+
 ```
 ---
 apiVersion: v1
@@ -139,8 +141,8 @@ spec:
 ```
 
 Backend Servce Definition
-    
-    
+
+
 ```
 ---
 apiVersion: v1
@@ -161,14 +163,14 @@ spec:
 
 ### Discovery
 
-Once a request hits any pod running the frontend service, the front end attempts to discover how to connect to the backend service. This is done in two ways: using environment variables or (preferably), by DNS SRV lookups.  
+Once a request hits any pod running the frontend service, the front end attempts to discover how to connect to the backend service. This is done in two ways: using environment variables or (preferably), by DNS SRV lookups.
 Each node in the cluster runs a local [DNS][6] server.
 
 Also see [Kubernetes networking][7]
 
 Environment Variables
-    
-    
+
+
     backendHost := os.Getenv("BACKEND_SRV_SERVICE_HOST")
     backendPort := os.Getenv("BACKEND_SRV_SERVICE_PORT")
     backendRsp, backendErr := http.Get(fmt.Sprintf(
@@ -180,8 +182,8 @@ Environment Variables
     }
 
 DNS SRV
-    
-    
+
+
     cname, rec, err := net.LookupSRV("be", "tcp", "be-srv.default.svc.cluster.local")
         if err != nil {
             http.Error(resp, err.Error(), http.StatusInternalServerError)
@@ -196,12 +198,12 @@ DNS SRV
 ### Create Test Cluster
 
 Create the cluster with two nodes in us-central1-a using either gcloud or the Cloud Console
-    
-    
+
+
     gcloud config set compute/zone us-central1-a
     gcloud container clusters create cluster-1 --num-nodes 3
-    
-    
+
+
     gcloud compute instances list
     NAME                                                  ZONE           MACHINE_TYPE               PREEMPTIBLE  INTERNAL_IP  EXTERNAL_IP      STATUS
     gke-cluster-1-default-pool-1e4517ed-44z4              us-central1-a  n1-standard-1                           10.128.0.29  104.154.236.204  RUNNING
@@ -211,16 +213,16 @@ Create the cluster with two nodes in us-central1-a using either gcloud or the Cl
 ### Create Replication Controllers and Services
 
 Run thefollowing to create the frontend/backend replication controllers and services.
-    
-    
+
+
     kubectl create -f backend-rc.yaml
     kubectl create -f backend-srv.yaml
     kubectl create -f show-rc.yaml
     kubectl create -f show-srv.yaml
 
 #### List the nodes
-    
-    
+
+
     kubectl get no
     NAME                                       STATUS    AGE
     gke-cluster-1-default-pool-1e4517ed-44z4   Ready     11m
@@ -229,8 +231,8 @@ Run thefollowing to create the frontend/backend replication controllers and serv
 
 
 #### List the pods
-    
-    
+
+
     kubectl get po
     NAME               READY     STATUS    RESTARTS   AGE
     backend-rc-33mm5   1/1       Running   0          2m
@@ -241,8 +243,8 @@ Run thefollowing to create the frontend/backend replication controllers and serv
     show-rc-qnm6w      1/1       Running   0          1m
 
 #### List the replication controllers
-    
-    
+
+
     kubectl get rc
     NAME         DESIRED   CURRENT   READY     AGE
     backend-rc   3         3         3         3m
@@ -250,8 +252,8 @@ Run thefollowing to create the frontend/backend replication controllers and serv
 
 
 #### List the services
-    
-    
+
+
     kubectl get svc
     NAME          CLUSTER-IP     EXTERNAL-IP      PORT(S)        AGE
     backend-srv   10.3.252.149   <none>           5000/TCP       4m
@@ -266,8 +268,8 @@ The public IP assigned to our Frontend Loadblancer is: 130.211.198.39
 ### Test the GKE cluster
 
 The frontend service is available 130.211.198.39:80 so an invocation shows:
-    
-    
+
+
     curl http://130.211.198.39/
     Pod Name: show-rc-qnm6w
     Pod Namespace: default
@@ -324,8 +326,8 @@ You can, of course use [Google Container Registry][9]
 [1]: https://github.com/kubernetes/kubernetes.github.io/blob/master/docs/user-guide/services/index.md
 [2]: https://cloud.google.com/container-engine/docs/services/
 [3]: https://github.com/kubernetes/kubernetes.github.io/tree/master/docs/user-guide/environment-guide
-[4]: https://hub.docker.com/r/nickleefly/show/
-[5]: https://hub.docker.com/r/nickleefly/backend/
+[4]: https://hub.docker.com/r/nickleefly/env-show/
+[5]: https://hub.docker.com/r/nickleefly/env-backend/
 [6]: https://github.com/kubernetes/kubernetes/tree/master/cluster/addons/dns
 [7]: https://github.com/kubernetes/community/blob/master/contributors/design-proposals/networking.md
 [8]: http://kubernetes.io/v1.0/docs/user-guide/services.html#ips-and-vips
