@@ -299,7 +299,9 @@ The following shows the call flow between the the frontend and backend.
 
 For a detailed description of the proxy and VIPs, see [Kubernetes Services][8]
 
+![Diagram](/images/docs/hello-container-engine-cluster.jpg)
 
+[available draw link](https://goo.gl/iZG7Ul)
 ### Automatic configuration on GKE
 
 The firwall, network configuration created automatically
