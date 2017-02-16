@@ -312,6 +312,7 @@ Cleanup
 kubectl delete rc,service -l type=show-type
 kubectl delete rc,service -l type=backend-type
 gcloud container clusters delete cluster-1
+
 ### Extending the sample
 
 If you want to extend the sample, the easiest way is to build the sample an push it to your public dockerhub area where kubernetes can download it.
